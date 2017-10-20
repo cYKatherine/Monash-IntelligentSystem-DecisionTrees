@@ -36,7 +36,7 @@ class DecisionTree :
       self.split_random = split_random # if True splits randomly, otherwise splits based on information gain
       self.depth_limit = depth_limit
       self.default_label = default_label
-      self.current_depth = 0
+      self.current_depth = curr_depth
 
       self.parent = None
       self.subset_0 = None
@@ -67,27 +67,32 @@ class DecisionTree :
          new_features_to_choose = features_to_choose[:]
          new_features_to_choose.remove(next_feature)
          new_default = self.plurality_value(examples)
+         # print(features_to_choose, new_features_to_choose)
 
          next_examples = [new_examples_0, new_examples_1]
-         for i in range(1):
+         for i in range(2):
             next_example = next_examples[i]
             subtree = DecisionTree(
-               self.split_random, self.depth_limit, self.current_depth + 1, new_default
+               split_random=self.split_random,
+               depth_limit=self.depth_limit,
+               curr_depth=self.current_depth + 1,
+               default_label=new_default
             ).decision_tree_learning(next_example, new_features_to_choose)
 
-            if i == 0:
-               self.subset_0 = subtree
-            else:
-               self.subset_1 = subtree
+            if subtree or subtree == 0:
+               if i == 0:
+                  self.subset_0 = subtree
+               else:
+                  self.subset_1 = subtree
 
-            if subtree not in [0, 1]:
-               subtree.parent = self
+               if subtree not in [0, 1]:
+                  subtree.parent = self
 
          return self
 
    def choose_feature_on_entropy(self, examples, features_to_choose):
       """ Return the next feature to choose based on the optimal entropy. """
-      current_entropy = get_entropy(examples)
+      current_entropy = self.get_entropy(examples)
       max_information_gain = -1
       next_feature_index = -1
 
@@ -115,29 +120,31 @@ class DecisionTree :
       """ Split the current exmaples based on `feature_index`. """
       new_examples_0 = []
       new_examples_1 = []
+      # print(feature_index)
       for row in examples:
-         new_row = row[:feature_index] + row[feature_index+1:]
-         if row[feature_index] == 0:
-            new_examples_0.append(new_row)
+         # new_row = row.features[:feature_index] + row.features[feature_index+1:]
+         # new_example = Example(new_row, row.outcome)
+         if row.features[feature_index] == 0:
+            new_examples_0.append(row)
          else:
-            new_examples_1.append(new_row)
+            new_examples_1.append(row)
       return (new_examples_0, new_examples_1)
 
    def get_entropy(self, examples):
       """ Return the value of entropy for the given examples. """
-      if len(examples == 0):
+      if len(examples) == 0:
          return 0
 
-      1_count = 0
-      0_count = 0
+      count_1 = 0
+      count_0 = 0
       for example in examples:
          if example.outcome == 1:
-            1_count += 1
+            count_1 += 1
          else:
-            0_count += 1
+            count_0 += 1
 
-      positive = 1_count/len(examples)
-      negative = 0_count/len(examples)
+      positive = count_1/len(examples)
+      negative = count_0/len(examples)
 
       if positive == 0 or negative == 0:
          return 0
@@ -159,17 +166,17 @@ class DecisionTree :
       Return the most common output value among examples.
       When there is a tie, return randomly.
       """
-      1_count = 0
-      0_count = 0
+      count_1 = 0
+      count_0 = 0
       result = 0
       for i in range(len(examples)):
          if examples[i].outcome == 1:
-            1_count += 1
+            count_1 += 1
          else:
-            0_count += 1
-      if 1_count > 0_count:
+            count_0 += 1
+      if count_1 > count_0:
          result = 1
-      elif 1_count == 0_count:
+      elif count_1 == count_0:
          result = random.choice([0, 1])
       return result
 
@@ -189,9 +196,8 @@ class DecisionTree :
    def predict(self, X_test):
       # receives a list of booleans
       # TODO: implement decision tree prediction
-      res = []
-      for test_case in X_test:
-         res.append(self.predict_aux(test_case))
+      print(self.predict_aux(X_test))
+      return self.predict_aux(X_test)
 
    def predict_aux(self, test_case):
       check_data = test_case[self.chosen_feature]
@@ -199,12 +205,14 @@ class DecisionTree :
          if self.subset_0 in [0, 1]:
             return self.subset_0
          else:
-            self.subset_0.predict_aux(test_case)
+            return self.subset_0.predict_aux(test_case)
       elif check_data == 1:
          if self.subset_1 in [0, 1]:
             return self.subset_1
          else:
-            self.subset_1.predict_aux(test_case)
+            return self.subset_1.predict_aux(test_case)
+      else:
+         print("This should never happen...")
 
 #===
 def compute_accuracy(dt_classifier, X_test, Y_test):
@@ -238,7 +246,12 @@ def main():
     X_train, Y_train = read_datafile(arguments.train_file)
     X_test, Y_test = read_datafile(arguments.test_file)
     # TODO: write your code
-    tree = DecisionTree(True if arguments.spliting_method == 'R' else False, arguments.depth, 0, 1)
+    tree = DecisionTree(
+       True if arguments.spliting_method == 'R' else False,
+       arguments.depth,
+       0,
+       1
+    )
     # import pdb; pdb.set_trace()
     tree.train(X_train, Y_train)
     print(compute_accuracy(tree, X_test, Y_test))
