@@ -226,7 +226,7 @@ def compute_accuracy(dt_classifier, X_test, Y_test):
 
 #==============================================
 def write_to_file(file_name, solution):
-    file_handle = open(file_name, 'w')
+    file_handle = open(file_name, 'a')
     file_handle.write(solution)
 
 def main():
@@ -235,7 +235,7 @@ def main():
 
     # specify what arguments will be coming from the terminal/commandline
     parser.add_argument("train_file", help= "the  name  of  the  input  training  file", type= str)
-    parser.add_argument("spliting_method", help="he  splitting  method  which  is  either  Information  gain  or  Random  (denoted  by  I  or  R  respectively)", type=str)
+    parser.add_argument("splitting_method", help="he  splitting  method  which  is  either  Information  gain  or  Random  (denoted  by  I  or  R  respectively)", type=str)
     parser.add_argument("depth", help="the  maximum  depth  allowed  for  the  decision  tree,", type=int)
     parser.add_argument("test_file", help="the name of the test file", type=str)
     parser.add_argument("output_file", help="the name of the output  file into which the accuracy of the learned model on the test set is written into a  line", type=str)
@@ -247,14 +247,17 @@ def main():
     X_test, Y_test = read_datafile(arguments.test_file)
     # TODO: write your code
     tree = DecisionTree(
-       True if arguments.spliting_method == 'R' else False,
+       True if arguments.splitting_method == 'R' else False,
        arguments.depth,
        0,
        1
     )
     # import pdb; pdb.set_trace()
     tree.train(X_train, Y_train)
-    print(compute_accuracy(tree, X_test, Y_test))
+    accuracy = compute_accuracy(tree, X_test, Y_test)
+    print(accuracy)
+    output_string = "\nSplitting method: {}, Depth limit: {}, Accuracy: {}".format(arguments.splitting_method, arguments.depth, accuracy)
+    write_to_file(arguments.output_file, output_string)
 #==============================================
 if __name__ == "__main__":
     main()
