@@ -196,8 +196,11 @@ class DecisionTree :
    def predict(self, X_test):
       # receives a list of booleans
       # TODO: implement decision tree prediction
-      print(self.predict_aux(X_test))
-      return self.predict_aux(X_test)
+      # print(self.predict_aux(X_test))
+      if self.depth_limit == 0:
+         return self
+      else:
+         return self.predict_aux(X_test)
 
    def predict_aux(self, test_case):
       check_data = test_case[self.chosen_feature]
