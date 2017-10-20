@@ -52,7 +52,45 @@ class DecisionTree :
          if self.split_random:
             next_feature = random.choice(features_to_choose)  # Choose a random feature
          else:
-            next_feature = # TODO: Choice feature based on entropy
+            next_feature = self.choose_feature_on_entropy(examples, features_to_choose)
+
+   def choose_feature_on_entropy(self, examples, features_to_choose):
+      """ Return the next feature to choose based on the optimal entropy. """
+      current_entropy = get_entropy(examples)
+      max_information_gain = -1
+      next_feature_index = -1
+
+      for feature_index in features_to_choose:
+         new_examples_0, new_examples_1 = self.get_new_examples(examples, feature_index)
+
+         # Get the entropy of subsets
+         new_examples_0_entropy = self.get_entropy(new_examples_0)
+         new_examples_1_entropy = self.get_entropy(new_examples_1)
+
+         new_examples_0_length = len(new_examples_0)
+         new_examples_1_length = len(new_examples_1)
+         current_examples_length = len(examples)
+         subset_entropy_expectation = (new_examples_0_length / current_examples_length) * new_examples_0_entropy + (new_examples_1_length / current_examples_length) * new_examples_1_entropy
+
+         information_gain = current_entropy - subset_entropy_expectation
+
+         if information_gain > max_information_gain:
+            max_information_gain = information_gain
+            next_feature_index = feature_index
+
+      return next_feature_index
+
+   def get_new_examples(self, examples, feature_index):
+      """ Split the current exmaples based on `feature_index`. """
+      new_examples_0 = []
+      new_examples_1 = []
+      for row in examples:
+         new_row = row[:feature_index] + row[feature_index+1:]
+         if row[feature_index] == 0:
+            new_examples_0.append(new_row)
+         else:
+            new_examples_1.append(new_row)
+      return (new_examples_0, new_examples_1)
 
    def get_entropy(self, examples):
       """ Return the value of entropy for the given examples. """
