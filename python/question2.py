@@ -1,3 +1,4 @@
+import argparse as ap
 import random
 import math
 
@@ -216,7 +217,31 @@ def compute_accuracy(dt_classifier, X_test, Y_test):
    return (numRight*1.0)/len(Y_test)
 
 #==============================================
+def write_to_file(file_name, solution):
+    file_handle = open(file_name, 'w')
+    file_handle.write(solution)
+
+def main():
+    # create a parser object
+    parser = ap.ArgumentParser()
+
+    # specify what arguments will be coming from the terminal/commandline
+    parser.add_argument("train_file", help= "the  name  of  the  input  training  file", type= str)
+    parser.add_argument("spliting_method", help="he  splitting  method  which  is  either  Information  gain  or  Random  (denoted  by  I  or  R  respectively)", type=str)
+    parser.add_argument("depth", help="the  maximum  depth  allowed  for  the  decision  tree,", type=int)
+    parser.add_argument("test_file", help="the name of the test file", type=str)
+    parser.add_argument("output_file", help="the name of the output  file into which the accuracy of the learned model on the test set is written into a  line", type=str)
+
+    # get all the arguments
+    arguments = parser.parse_args()
+
+    X_train, Y_train = read_datafile(arguments.train_file)
+    X_test, Y_test = read_datafile(arguments.test_file)
+    # TODO: write your code
+    tree = DecisionTree(True if arguments.spliting_method == 'R' else False, arguments.depth, 0, 1)
+    # import pdb; pdb.set_trace()
+    tree.train(X_train, Y_train)
+    print(compute_accuracy(tree, X_test, Y_test))
 #==============================================
-X_train, Y_train = read_datafile('train.txt')
-X_test, Y_test = read_datafile('test.txt')
-# TODO: write your code
+if __name__ == "__main__":
+    main()
