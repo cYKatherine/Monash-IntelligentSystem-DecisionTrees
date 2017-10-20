@@ -1,4 +1,5 @@
 import random
+import math
 
 def read_datafile(fname, attribute_data_type = 'integer'):
    inf = open(fname,'r')
@@ -52,6 +53,27 @@ class DecisionTree :
             next_feature = random.choice(features_to_choose)  # Choose a random feature
          else:
             next_feature = # TODO: Choice feature based on entropy
+
+   def get_entropy(self, examples):
+      """ Return the value of entropy for the given examples. """
+      if len(examples == 0):
+         return 0
+
+      1_count = 0
+      0_count = 0
+      for example in examples:
+         if example.outcome == 1:
+            1_count += 1
+         else:
+            0_count += 1
+
+      positive = 1_count/len(examples)
+      negative = 0_count/len(examples)
+
+      if positive == 0 or negative == 0:
+         return 0
+
+      return -1 * positive * math.log(positive, 2) - negative * math.log(negative, 2)
 
    def check_same_classification(self, examples):
       """ Check if all the samples have the same outcome. """
