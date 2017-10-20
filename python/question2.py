@@ -41,6 +41,8 @@ class DecisionTree :
       self.subset_0 = None
       self.subset_1 = None
 
+      self.chosen_feature = None
+
    def decision_tree_learning(self, examples, features_to_choose):
       if self.current_depth >= self.depth_limit:
          return self.plurality_value(examples)
@@ -56,6 +58,8 @@ class DecisionTree :
             next_feature = random.choice(features_to_choose)  # Choose a random feature
          else:
             next_feature = self.choose_feature_on_entropy(examples, features_to_choose)
+
+         self.chosen_feature = next_feature
 
          # TODO: Now we have the new subsets, HOW TO LINK THE NEW SUBSET TO THE CURRENT TREE?????
          new_examples_0, new_examples_1 = self.get_new_examples(examples, next_feature)
@@ -181,10 +185,25 @@ class DecisionTree :
 
       return self.decision_tree_learning(examples, features_to_choose)
 
-   def predict(self, X_train):
+   def predict(self, X_test):
       # receives a list of booleans
       # TODO: implement decision tree prediction
-      print("Kaaaaat")
+      res = []
+      for test_case in X_test:
+         res.append(self.predict_aux(test_case))
+
+   def predict_aux(self, test_case):
+      check_data = test_case[self.chosen_feature]
+      if check_data == 0:
+         if self.subset_0 in [0, 1]:
+            return self.subset_0
+         else:
+            self.subset_0.predict_aux(test_case)
+      elif check_data == 1:
+         if self.subset_1 in [0, 1]:
+            return self.subset_1
+         else:
+            self.subset_1.predict_aux(test_case)
 
 #===
 def compute_accuracy(dt_classifier, X_test, Y_test):
