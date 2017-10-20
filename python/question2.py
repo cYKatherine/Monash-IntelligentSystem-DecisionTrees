@@ -170,8 +170,16 @@ class DecisionTree :
 
    def train(self, X_train, Y_train):
       # receives a list of objects of type Example
-      # TODO: implement decision tree training
-      pass
+      examples = []
+      for i in range(len(X_train)):
+         example = Example(X_train[i], Y_train[i])
+         examples.append(example)
+
+      features_to_choose = []
+      for i in range(len(X_train[0])):
+         features_to_choose.append(i)
+
+      return self.decision_tree_learning(examples, features_to_choose)
 
    def predict(self, X_train):
       # receives a list of booleans
