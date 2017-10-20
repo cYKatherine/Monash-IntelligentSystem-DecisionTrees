@@ -34,9 +34,12 @@ class DecisionTree :
    def __init__(self, split_random, depth_limit, curr_depth = 0, default_label = 1):
       self.split_random = split_random # if True splits randomly, otherwise splits based on information gain
       self.depth_limit = depth_limit
-      self.parent = None
       self.default_label = default_label
       self.current_depth = 0
+
+      self.parent = None
+      self.subset_0 = None
+      self.subset_1 = None
 
    def decision_tree_learning(self, examples, features_to_choose):
       if self.current_depth >= self.depth_limit:
@@ -53,6 +56,29 @@ class DecisionTree :
             next_feature = random.choice(features_to_choose)  # Choose a random feature
          else:
             next_feature = self.choose_feature_on_entropy(examples, features_to_choose)
+
+         # TODO: Now we have the new subsets, HOW TO LINK THE NEW SUBSET TO THE CURRENT TREE?????
+         new_examples_0, new_examples_1 = self.get_new_examples(examples, next_feature)
+         new_features_to_choose = features_to_choose[:]
+         new_features_to_choose.remove(next_feature)
+         new_default = self.plurality_value(examples)
+
+         next_examples = [new_examples_0, new_examples_1]
+         for i in range(1):
+            next_example = next_examples[i]
+            subtree = DecisionTree(
+               self.split_random, self.depth_limit, self.current_depth + 1, new_default
+            ).decision_tree_learning(next_example, new_features_to_choose)
+
+            if i == 0:
+               self.subset_0 = subtree
+            else:
+               self.subset_1 = subtree
+
+            if subtree not in [0, 1]:
+               subtree.parent = self
+
+         return self
 
    def choose_feature_on_entropy(self, examples, features_to_choose):
       """ Return the next feature to choose based on the optimal entropy. """
